@@ -95,10 +95,10 @@ function beforeAttributeName (c) {
 
 function beforeAttributeValue (c) {
   if (c.match(/^[\t\n\f ]$/) || c === '>' || c === '/' || c === EOF) {
-    return afterAttributeValue
-  } else if (c === '"') {
+    return beforeAttributeValue
+  } else if (c === '\"') {
     return doubleQuotedAttributeValue
-  } else if (c === "'") {
+  } else if (c === "\'") {
     return singleQuotedAttributeValue
   } else {
     return unQuotedAttributeValue(c)
@@ -107,12 +107,12 @@ function beforeAttributeValue (c) {
 
 function attributeName (c) {
   if (c === '>' || c === '/' || c === EOF || c.match(/^[\t\n\f ]$/)) {
-    return afterAttributeName
+    return afterAttributeName(c)
   } else if (c === '=') {
     return beforeAttributeValue
   } else if (c === '\u0000') {
 
-  } else if (c === '\"' || c === "'" || c === '<') {
+  } else if (c === '\"' || c === "\'" || c === '<') {
 
   } else {
     currentAttribute.name += c
@@ -121,6 +121,28 @@ function attributeName (c) {
 }
 
 function afterAttributeName () {}
+
+function unQuotedAttributeValue (c) {
+  if (c.match(/^[\t\n\f ]$/)) {
+    currentToken[currentAttribute.name] = currentAttribute.value
+    return beforeAttributeName
+  } else if (c === '/') {
+    currentToken[currentAttribute.name] = currentAttribute.value
+    return selfClosingStartTag
+  } else if (c == '>') {
+    currentToken[currentAttribute.name] = currentAttribute.value
+    emitToken(currentToken)
+  } else if (c === '\u0000') {
+
+  } else if (c === "\"" || c === "\'" || c === '=' || c=== "`") {
+
+  } else if (c === EOF) {
+
+  } else {
+    currentAttribute.value += c
+    return unQuotedAttributeValue
+  }
+}
 function tagName (c) {  
   if (c.match(/^[\t\n\f ]$/)) {
     return beforeAttributeName
