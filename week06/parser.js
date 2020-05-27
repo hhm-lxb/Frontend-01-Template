@@ -3,6 +3,8 @@ let currentToken = null // tag
 let currentAttribute = null
 let currentTextNode = null
 let stack = [{ type: 'document', children: [] }]
+let { addCssRULES, computeCss } = require('./css-parser')
+let { layout } = require('./layout')
 function emitToken (token) {
   let top = stack[stack.length - 1]
   if (token.type === 'startTag') {
@@ -20,8 +22,9 @@ function emitToken (token) {
         })
       }
     }
-    top.children.push(element)
     element.parentNode = top
+    top.children.push(element)
+    computeCss(element, stack)
     currentTextNode = null
     // 不是自封闭标签
     if (!token.isSelfClosing) {
@@ -31,6 +34,10 @@ function emitToken (token) {
     if (top.tagName !== token.tagName) {
       throw new Error("Tag start end doesn't match !")
     } else {
+      if (top.tagName === 'style') {
+        addCssRULES(top.children[0].content)
+      }
+      layout(top)
       stack.pop()
     }
     currentTextNode = null
