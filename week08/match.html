@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Examples</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link href="" rel="stylesheet">
+</head>
+<body>
+    <div>
+    	<div id="myId" class="myClass" attr="myAttr"></div>
+    </div>
+    <script type="text/javascript">
+    	const dom = document.getElementById('myId')
+    	const reg = /^([a-z|A-Z]+)?(#[a-z|A-Z]+)?(\.[a-z|A-Z]+)?(\[[a-z|A-Z]+=[a-z|A-Z]+\])?$/
+    	function match (selector, ele) {
+    		if (!selector || !ele) {
+    			return false
+    		}
+    		let matched = false
+    		const selectorList = selector.split(' ').reverse() // 从左边开始匹配
+    		let i = 0
+    		if (matched = isMatch(selectorList[i++], ele)) {
+    			ele = ele.parentNode
+    			while (i < selectorList.length && ele && ele !== document) {
+    				if (isMatch(selectorList[i], ele)) {
+    					// 匹配成功
+    					matched = true
+    					i++
+    				} else {
+    					matched = false
+    				}
+    				ele = ele.parentNode
+    			}
+    		}
+    		// 如果此时选择器列表的长度大于i，则证明没有匹配完成
+    		return selectorList.length <= i
+    	}
+
+    	function isMatch (selector, ele) {
+    		const result = selector.match(reg)
+    		let isMatch = false
+    		if (!result) {
+    			return false
+    		}
+    		const [_, tag, id, className, attr] = result
+    		console.log(_, tag, id, className, attr)
+    		if (tag) {
+    			isMatch = tag === ele.tagName.toLowerCase()
+    		}
+    		if (id) {
+    			isMatch = id.slice(1) === ele.id
+    		}
+    		if (className) {
+    			isMatch = className.slice(1) === ele.className
+    		}
+    		if (attr) {
+    			const reg = /([a-z|A-Z]+)=([a-z|A-Z]+)/
+    			const [_, key, value] = reg.exec(attr)
+    			isMatch = ele.hasAttribute(key) && ele.getAttribute(key) === value
+    		}
+    		return isMatch
+    	}
+    	console.log(match('div #myId.myClass[attr=myAttr]', document.getElementById('myId')));
+    </script>
+</body>
+</html>
