@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    let usedReactivities = []
+    let reactivities = new Map()
+    function reactive (obj) {
+      if (reactivities.has(obj)) {
+        return reactivities.get(obj)
+      }
+      const proxy = new Proxy(obj, {
+        get (obj, prop) {
+          console.log(obj, prop)
+          usedReactivities.push([obj, prop])
+          if (typeof obj[prop] === 'object') {
+            return reactive(obj[prop])
+          }
+          return obj[prop]
+        },
+        set (obj, prop, val) {
+          obj[prop] = val
+          console.log(obj, prop, val)
+          if (handlers.has(obj) && handlers.get(obj).has(prop)) {
+            // 取到属性对应handler
+            for (let handler of handlers.get(obj).get(prop)) {
+              handler()
+            }
+          }
+          handlers.get(obj)
+          return obj[prop]
+        }
+      })
+      return proxy
+    }
+    function effect (handler) {
+      usedReactivities = []
+      handler()
+      console.log(usedReactivities)
+      for (let usedReactivity of usedReactivities) {
+        let [obj, prop] = usedReactivity
+        console.log(obj, prop)
+        if (!handlers.has(obj)) {
+          handlers.set(obj, new Map())
+        }
+        if (!handlers.get(obj).has(prop)) {
+          handlers.get(obj).set(prop, [])
+        }
+        handlers.get(obj).get(prop).push(handler)
+      }
+    }
+    let object = {
+      a: 1,
+      b: 2
+    }
+    let handlers = new Map()
+    let proxy = reactive(object)
+
+    let dummy
+    effect(() => dummy = proxy.a)
+    console.log(dummy)
+    proxy.a = 2
+    console.log(dummy)
+  </script>
+</body>
+</html>

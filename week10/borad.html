@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .cell {
+        width:100px;
+        height:100px;
+        background-color: green;
+        display:inline-block;
+        border:solid 1px white;
+        vertical-align: middle;
+        line-height: 100px;
+        font-size: 50px;
+        text-align: center;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="board"> </div>
+  <script>
+    const pattern = [
+      [2, 0, 0],
+      [0, 1, 0],
+      [0, 0, 0]
+    ]
+    let color = 1
+    const board = document.getElementById('board')
+    function show () {
+      board.innerHTML = ''
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          const cell = document.createElement('div')
+          cell.classList.add('cell')
+          cell.innerText = pattern[i][j] === 2 ? '❌' :
+            pattern[i][j] === 1 ? "⭕️" : ''
+            // 里层是x 外层是 y
+          cell.addEventListener('click', () => move(j, i))
+          board.appendChild(cell)
+        }
+        board.appendChild(document.createElement('br'))
+      }
+    }
+
+    function move (x, y) {
+      if (pattern[y][x] !== 0) {
+        return
+      }
+      pattern[y][x] = color
+      color = 3 - color // color只有1或者2
+      show()
+      
+    }
+    function check (pattern, color) {
+      // 横向
+      for (let i = 0; i < 3; i++) {
+        let win = true
+        for (let j = 0; j < 3; j++) {
+          if (pattern[i][j] !== color) {
+            win = false
+            break
+          }
+        }
+        if (win) {
+          return true
+        }
+      }
+      // 纵向
+      for (let i = 0; i < 3; i++) {
+        let win = true
+        for (let j = 0; j < 3; j++) {
+          if (pattern[j][i] !== color) {
+            win = false
+            break
+          }
+        }
+        if (win) {
+          return true
+        }
+      }
+      // 斜向
+      
+    }
+    show()
+  </script>
+</body>
+</html>
